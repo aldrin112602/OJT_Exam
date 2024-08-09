@@ -7,7 +7,7 @@ interface FormInputsInterface {
   password: string;
 }
 
-const Login = () => {
+const Login: React.FC = () => {
   const [formInputs, setFormInputs] = useState<FormInputsInterface>({
     username: "",
     password: "",
@@ -42,8 +42,7 @@ const Login = () => {
         title: "Success!",
         text: "Logged in successfully!",
         icon: "success",
-      })
-      .then(() => {
+      }).then(() => {
         // Redirect to dashboard or home page
         // window.location.href = "/dashboard";
       });
@@ -63,7 +62,7 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-blue-400 p-10">
+    <div className="min-h-96 flex items-center justify-center bg-gray-100 p-10">
       <form
         onSubmit={formSubmit}
         className="bg-white shadow p-10 md:w-1/2 w-full rounded-lg"
