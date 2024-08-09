@@ -2,51 +2,64 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import api from "../axiosInstance";
 
-// Inputs Value Interface
 interface FormInputsInterface {
   username: string;
   password: string;
 }
 
 const Login = () => {
-  // Set Inputs Initial Value
   const [formInputs, setFormInputs] = useState<FormInputsInterface>({
     username: "",
     password: "",
   });
-
-  // For show/hide password
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-
-  // Set document title
   useEffect(() => {
     document.title = "Login Page";
   }, []);
 
-  // Form Event Handler
-  const formSubmit = async (ev: FormEvent) => {
-    ev.preventDefault();
-    try {
-      const response = await api.post("/api/auth/login", formInputs);
-    } catch (error) {
-      const { message } = error.response.data;
-      Swal.fire({
-        title: "Error!",
-        text: message,
-        icon: "error",
-        timer: 2000,
-      });
-    }
-  };
-
-  // Inputs Event Handler
   const handleFormInput = (ev: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = ev.target;
     setFormInputs((prev) => ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const formSubmit = async (ev: FormEvent) => {
+    ev.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await api.post("/api/auth/login", formInputs);
+      const { token } = response.data;
+
+      // Save token
+      localStorage.setItem("authToken", token);
+
+      Swal.fire({
+        title: "Success!",
+        text: "Logged in successfully!",
+        icon: "success",
+      })
+      .then(() => {
+        // Redirect to dashboard or home page
+        // window.location.href = "/dashboard";
+      });
+
+      // Redirect or handle authenticated state
+    } catch (error) {
+      const { message } = error.response?.data || { message: "Unknown error" };
+      Swal.fire({
+        title: "Error!",
+        text: message,
+        icon: "error",
+        timer: 2000,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -80,16 +93,26 @@ const Login = () => {
             onChange={handleFormInput}
             value={formInputs.password}
             className="form-input w-full rounded"
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             id="password"
           />
-          <i className="fa-regular fa-eye absolute right-4 top-1/2 mt-1 cursor-pointer hover:text-slate-600"></i>
+          <i
+            onClick={() => setShowPassword(!showPassword)}
+            className={
+              showPassword
+                ? "fa-regular fa-eye-slash absolute right-4 top-1/2 mt-1 cursor-pointer hover:text-slate-600"
+                : "fa-regular fa-eye absolute right-4 top-1/2 mt-1 cursor-pointer hover:text-slate-600"
+            }
+          ></i>
         </div>
 
         <div className="my-3">
-          <button className="w-full bg-slate-800 hover:bg-slate-600 text-white py-2 rounded">
-            Log In
+          <button
+            className="w-full bg-slate-800 hover:bg-slate-600 text-white py-2 rounded"
+            disabled={loading}
+          >
+            {loading ? "Logging In..." : "Log In"}
           </button>
         </div>
       </form>
