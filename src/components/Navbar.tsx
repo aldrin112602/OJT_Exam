@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 interface NavbarProps {
   isAuth: boolean;
@@ -6,22 +7,35 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ isAuth }) => {
   const onLogout = () => {
-
-  }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You are going to Log Out",
+      showCancelButton: true,
+      showConfirmButton: true,
+      confirmButtonText: "Yes, Log Out!",
+      icon: "warning"
+    }).then(res => {
+      if(res?.isConfirmed) {
+        localStorage.removeItem("authToken");
+        Swal.fire({
+          title: "Success!",
+          text: "Log Out Successfully!",
+          icon: 'success'
+        }).then(() => {
+          location.reload();
+        })
+      }
+    });
+  };
   return (
     <nav className="bg-gray-800 text-white">
       <div className="container mx-auto flex items-center justify-between p-5">
         <div className="text-2xl font-bold">
-          <Link to="/">MyApp</Link>
+          <Link to="/">CRUD App</Link>
         </div>
         <ul className="flex items-center gap-7">
           {isAuth ? (
             <>
-              <li>
-                <Link to="/" className="hover:text-gray-300">
-                  Dashboard
-                </Link>
-              </li>
               <li>
                 <button
                   onClick={onLogout}

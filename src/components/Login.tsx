@@ -43,11 +43,8 @@ const Login: React.FC = () => {
         text: "Logged in successfully!",
         icon: "success",
       }).then(() => {
-        // Redirect to dashboard or home page
-        // window.location.href = "/dashboard";
+        location.href = "/";
       });
-
-      // Redirect or handle authenticated state
     } catch (error) {
       const { message } = error.response.data || { message: "Unknown error" };
       Swal.fire({
