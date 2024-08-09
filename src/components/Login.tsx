@@ -49,7 +49,7 @@ const Login: React.FC = () => {
 
       // Redirect or handle authenticated state
     } catch (error) {
-      const { message } = error.response?.data || { message: "Unknown error" };
+      const { message } = error.response.data || { message: "Unknown error" };
       Swal.fire({
         title: "Error!",
         text: message,
