@@ -5,6 +5,7 @@ const { prisma } = require('../models/prismaClient');
 // Login endpoint
 exports.login = async (req, res) => {
   const { username, password } = req.body;
+  console.log(req.body)
 
   try {
     const user = await prisma.user.findFirst({
@@ -24,7 +25,8 @@ exports.login = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ token });
+    res.status(200).json({ token });
+    
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Internal server error' });
