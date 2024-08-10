@@ -18,7 +18,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuth }) => {
       if(res?.isConfirmed) {
         localStorage.removeItem("authToken");
         Swal.fire({
-          title: "Success!",
+          title: "Success",
           text: "Log Out Successfully!",
           icon: 'success'
         }).then(() => {

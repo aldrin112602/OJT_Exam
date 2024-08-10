@@ -39,7 +39,7 @@ const Login: React.FC = () => {
       localStorage.setItem("authToken", token);
 
       Swal.fire({
-        title: "Success!",
+        title: "Success",
         text: "Logged in successfully!",
         icon: "success",
       }).then(() => {
