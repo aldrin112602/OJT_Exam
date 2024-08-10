@@ -48,7 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuth }) => {
           ) : (
             <>
               <li>
-                <Link to="/home" className="hover:text-gray-300">
+                <Link to="/" className="hover:text-gray-300">
                   Home
                 </Link>
               </li>

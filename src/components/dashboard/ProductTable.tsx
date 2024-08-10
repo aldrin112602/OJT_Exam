@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../axiosInstance";
-import CreateProduct from "./CreateProduct";
+import CreateUpdateProduct from "./CreateUpdateProduct";
 import TopButtons from "./TopButtons";
 import Swal from "sweetalert2";
 
@@ -17,8 +17,7 @@ const ProductTable: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [createProduct, setCreateProduct] = useState(false);
-
-  
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
 
   const fetchProducts = async () => {
     try {
@@ -43,9 +42,6 @@ const ProductTable: React.FC = () => {
     );
   };
 
-
-  
-
   const handleDeleteSelected = async () => {
     if (selectedProducts.length === 0) {
       Swal.fire({
@@ -68,14 +64,8 @@ const ProductTable: React.FC = () => {
 
     if (confirmation.isConfirmed) {
       try {
-        await api.post("/api/products/multiple", {
-          ids: selectedProducts,
-        });
-        Swal.fire(
-          "Deleted!",
-          "Your selected products have been deleted.",
-          "success"
-        );
+        await api.post("/api/products/multiple", { ids: selectedProducts });
+        Swal.fire("Deleted!", "Your selected products have been deleted.", "success");
         fetchProducts();
         setSelectedProducts([]);
       } catch (error) {
@@ -88,53 +78,53 @@ const ProductTable: React.FC = () => {
     }
   };
 
-
-
   const deleteProduct = async (id: number) => {
     try {
       const confirmation = await Swal.fire({
         title: "Are you sure?",
-        text: "You will not be able to recover these product!",
+        text: "You will not be able to recover this product!",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Yes, delete it!",
       });
-  
+
       if (confirmation.isConfirmed) {
         await api.delete(`/api/products/${id}`);
-        Swal.fire(
-          "Deleted!",
-          "Product has been deleted.",
-          "success"
-        );
+        Swal.fire("Deleted!", "Product has been deleted.", "success");
         fetchProducts();
       }
-      
-    } catch(error) {
+    } catch (error) {
       Swal.fire({
         title: "Error!",
         text: "Failed to delete product.",
         icon: "error",
       });
     }
-  }
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditProduct(product);
+    setCreateProduct(true);
+  };
+
+  const handleCloseModal = () => {
+    setCreateProduct(false);
+    setEditProduct(null);
+  };
 
   return (
     <>
-      <TopButtons
-        onOpen={() => setCreateProduct(true)}
-        deleteMultiple={handleDeleteSelected}
-      />
+      <TopButtons onOpen={() => setCreateProduct(true)} deleteMultiple={handleDeleteSelected} />
       <div className="p-5 bg-white">
         <h1 className="text-xl font-semibold my-2">PRODUCT LIST</h1>
-        <CreateProduct
+        <CreateUpdateProduct
           isOpen={createProduct}
-          onClose={() => setCreateProduct(false)}
+          onClose={handleCloseModal}
           onProductAdded={fetchProducts}
+          product={editProduct}
         />
-
         {loading ? (
           <p>Loading products...</p>
         ) : error ? (
@@ -148,9 +138,7 @@ const ProductTable: React.FC = () => {
                     type="checkbox"
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedProducts(
-                          products.map((product) => product.id)
-                        );
+                        setSelectedProducts(products.map((product) => product.id));
                       } else {
                         setSelectedProducts([]);
                       }
@@ -159,9 +147,7 @@ const ProductTable: React.FC = () => {
                   />
                 </th>
                 <th className="text-left py-2 px-4 border">Product Name</th>
-                <th className="text-left py-2 px-4 border">
-                  Product Description
-                </th>
+                <th className="text-left py-2 px-4 border">Product Description</th>
                 <th className="text-left py-2 px-4 border">Product Price</th>
                 <th className="text-left py-2 px-4 border">Actions</th>
               </tr>
@@ -180,11 +166,17 @@ const ProductTable: React.FC = () => {
                   <td className="py-2 px-4 border">{product.description}</td>
                   <td className="py-2 px-4 border">${product.price}</td>
                   <td className="py-2 px-4 border">
-                    <button className="border px-2 py-1 rounded-md text-sm text-white bg-blue-600 hover:bg-blue-900">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="border px-2 py-1 rounded-md text-sm text-white bg-blue-600 hover:bg-blue-900"
+                    >
                       Edit
                     </button>
                     &nbsp;
-                    <button onClick={() => deleteProduct(product.id)} className="border text-white px-2 py-1 rounded-md text-sm bg-rose-600 hover:bg-rose-900">
+                    <button
+                      onClick={() => deleteProduct(product.id)}
+                      className="border text-white px-2 py-1 rounded-md text-sm bg-rose-600 hover:bg-rose-900"
+                    >
                       Delete
                     </button>
                   </td>

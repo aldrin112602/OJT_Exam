@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import api from "../../axiosInstance";
 import Swal from "sweetalert2";
 
@@ -6,26 +6,37 @@ interface PropsInterface {
   isOpen?: boolean;
   onClose: () => void;
   onProductAdded: () => void;
+  product?: {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+  };
 }
 
-interface FormInputsInterface {
-  productName: string;
-  productDescription: string;
-  productPrice: number | string;
-}
-
-const CreateProduct: React.FC<PropsInterface> = ({
+const CreateUpdateProduct: React.FC<PropsInterface> = ({
   isOpen = false,
   onClose,
   onProductAdded,
+  product,
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const [formInputs, setFormInputs] = useState<FormInputsInterface>({
+  const [formInputs, setFormInputs] = useState({
     productName: "",
     productDescription: "",
     productPrice: "",
   });
+
+  useEffect(() => {
+    if (product) {
+      setFormInputs({
+        productName: product.name,
+        productDescription: product.description,
+        productPrice: product.price.toString(),
+      });
+    }
+  }, [product]);
 
   const handleFormInput = (ev: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = ev.target;
@@ -40,12 +51,23 @@ const CreateProduct: React.FC<PropsInterface> = ({
     setLoading(true);
 
     try {
-      await api.post("/api/products", formInputs);
-      Swal.fire({
-        title: "Success",
-        text: "Product added successfully!",
-        icon: "success",
-      });
+      if (product) {
+        // Edit existing product
+        await api.put(`/api/products/${product.id}`, formInputs);
+        Swal.fire({
+          title: "Success",
+          text: "Product updated successfully!",
+          icon: "success",
+        });
+      } else {
+        // Create new product
+        await api.post("/api/products", formInputs);
+        Swal.fire({
+          title: "Success",
+          text: "Product added successfully!",
+          icon: "success",
+        });
+      }
       onProductAdded();
       onClose();
       setFormInputs({
@@ -54,7 +76,7 @@ const CreateProduct: React.FC<PropsInterface> = ({
         productPrice: "",
       });
     } catch (error) {
-      const { message } = error.response.data || { message: "Unknown error" };
+      const { message } = error.response?.data || { message: "Unknown error" };
       Swal.fire({
         title: "Error!",
         text: message,
@@ -71,8 +93,10 @@ const CreateProduct: React.FC<PropsInterface> = ({
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-96 shadow-lg relative">
-            <h2 className="text-lg font-semibold mb-4">Create Product</h2>
-            <form method="dialog" onSubmit={formSubmit}>
+            <h2 className="text-lg font-semibold mb-4">
+              {product ? "Edit Product" : "Create Product"}
+            </h2>
+            <form onSubmit={formSubmit}>
               <div className="mb-4">
                 <label htmlFor="name" className="block mb-1">
                   Product Name:
@@ -120,7 +144,7 @@ const CreateProduct: React.FC<PropsInterface> = ({
                   className="bg-slate-800 hover:bg-slate-600 text-white py-2 px-4 rounded mr-2"
                   disabled={loading}
                 >
-                  {loading ? "Submitting..." : "Create Product"}
+                  {loading ? "Submitting..." : product ? "Update Product" : "Create Product"}
                 </button>
                 <button
                   type="button"
@@ -138,4 +162,4 @@ const CreateProduct: React.FC<PropsInterface> = ({
   );
 };
 
-export default CreateProduct;
+export default CreateUpdateProduct;
